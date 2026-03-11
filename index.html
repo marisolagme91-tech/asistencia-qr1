@@ -3,52 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escáner de Asistencia</title>
+    <title>Asistencia QR</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
-        #reader { width: 100%; max-width: 400px; margin: 20px auto; border-radius: 15px; overflow: hidden; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        #status { padding: 15px; margin: 20px; border-radius: 10px; background: white; font-weight: bold; }
-        .exito { background: #d4edda !important; color: #155724; border: 1px solid #c3e6cb; }
-    </style>
 </head>
-<body>
-    <h2>🚀 Escáner de Asistencia</h2>
-    <div id="reader"></div>
-    <div id="status">Esperando código QR...</div>
+<body style="font-family: Arial, sans-serif; text-align: center; background-color: #f4f4f4; padding: 20px;">
+
+    <h2 style="color: #333;">📸 Escáner de Alumnos</h2>
+    
+    <div id="reader" style="width: 100%; max-width: 400px; margin: auto; background: white; border-radius: 10px;"></div>
+    
+    <div id="mensaje" style="margin-top: 20px; padding: 15px; font-weight: bold; background: white; border-radius: 5px; display: inline-block;">
+        Esperando escaneo...
+    </div>
 
     <script>
-        // Asegúrate de poner TU URL REAL entre las comillas
-const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbzRqz1ilYgBXFC0cPBwijnZgm-dJXyjZOqiXWAX6zYQ82PwLFKW5clykpvk5fCCMq5flg/exec
-"; 
+        // --- PEGA TU URL DE GOOGLE AQUÍ ABAJO ---
+        const URL_GOOGLE = "https://script.google.com/macros/s/AKfycbzRqz1ilYgBXFC0cPBwijnZgm-dJXyjZOqiXWAX6zYQ82PwLFKW5clykpvk5fCCMq5flg/exec"; 
 
-function onScanSuccess(texto) {
-    // 1. Mostramos en pantalla que estamos trabajando
-    document.getElementById('msg').innerText = "Enviando: " + texto + "...";
-    
-    // 2. Creamos un elemento invisible para enviar el dato sin que el navegador lo bloquee
-    // Esta es la técnica más vieja y confiable para evitar errores de permisos (CORS)
-    var img = new Image();
-    img.src = URL_GOOGLE + "?alumnoId=" + encodeURIComponent(texto);
-    
-    // 3. Confirmación visual rápida
-    img.onload = function() {
-        document.getElementById('msg').innerText = "✅ REGISTRADO: " + texto;
-    };
-    
-    // Si la imagen falla (normalmente Google no devuelve una imagen real), 
-    // de todos modos el dato llega porque el servidor procesa la URL.
-    setTimeout(function() {
-        document.getElementById('msg').innerText = "✅ REGISTRADO: " + texto;
-        if(navigator.vibrate) navigator.vibrate(100);
-    }, 1000);
-}
+        function onScanSuccess(decodedText) {
+            document.getElementById("mensaje").innerText = "Registrando: " + decodedText;
+            document.getElementById("mensaje").style.color = "blue";
 
-var html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-html5QrcodeScanner.render(onScanSuccess);
+            // Usamos el método de la "Imagen invisible" para saltar bloqueos de seguridad
+            var img = new Image();
+            img.src = URL_GOOGLE + "?alumnoId=" + encodeURIComponent(decodedText);
+            
+            img.onload = function() {
+                confirmar(decodedText);
+            };
+            
+            // Por si Google no responde con una imagen, confirmamos tras 1 segundo
+            setTimeout(function() {
+                confirmar(decodedText);
+            }, 1000);
+        }
+
+        function confirmar(texto) {
+            document.getElementById("mensaje").innerText = "✅ REGISTRADO: " + texto;
+            document.getElementById("mensaje").style.color = "green";
+            if (navigator.vibrate) navigator.vibrate(200);
+        }
+
+        function onScanFailure(error) {
+            // No mostrar errores de enfoque para no saturar la pantalla
+        }
+
+        // Configuración del escáner
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", 
+            { fps: 10, qrbox: {width: 250, height: 250} }
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     </script>
 </body>
 </html>
-
-
-
