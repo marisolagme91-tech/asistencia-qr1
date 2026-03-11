@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner Pro</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f7f6; }
+        #reader { width: 100%; max-width: 400px; margin: auto; border: 5px solid #fff; border-radius: 20px; }
+        #status { margin-top: 20px; font-weight: bold; color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <h2>📸 Pase de Lista QR</h2>
+    <div id="reader"></div>
+    <div id="status">Esperando escaneo...</div>
+
+    <script>
+        const URL_WEB_APP = "PEGA_AQUI_TU_URL_DEL_PASO_1"; // <--- CAMBIA ESTO
+
+        function onScanSuccess(decodedText) {
+            document.getElementById('status').innerText = "Enviando: " + decodedText;
+            
+            fetch(`${URL_WEB_APP}?alumnoId=${decodedText}`)
+                .then(() => {
+                    document.getElementById('status').innerText = "✅ " + decodedText + " Registrado";
+                    navigator.vibrate(200); // Vibra al tener éxito
+                })
+                .catch(err => alert("Error al conectar: " + err));
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html>
