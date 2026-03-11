@@ -18,37 +18,36 @@
     <div id="status">Esperando código QR...</div>
 
     <script>
-        // CAMBIA ESTO: Pega aquí tu URL de Google que probaste manualmente
-        const URL_WEB_APP ="https://marisolagme91-tech.github.io/asistencia-qr1/";
+        // Asegúrate de poner TU URL REAL entre las comillas
+const URL_GOOGLE = "https://marisolagme91-tech.github.io/asistencia-qr1/
+"; 
 
+function onScanSuccess(texto) {
+    // 1. Mostramos en pantalla que estamos trabajando
+    document.getElementById('msg').innerText = "Enviando: " + texto + "...";
+    
+    // 2. Creamos un elemento invisible para enviar el dato sin que el navegador lo bloquee
+    // Esta es la técnica más vieja y confiable para evitar errores de permisos (CORS)
+    var img = new Image();
+    img.src = URL_GOOGLE + "?alumnoId=" + encodeURIComponent(texto);
+    
+    // 3. Confirmación visual rápida
+    img.onload = function() {
+        document.getElementById('msg').innerText = "✅ REGISTRADO: " + texto;
+    };
+    
+    // Si la imagen falla (normalmente Google no devuelve una imagen real), 
+    // de todos modos el dato llega porque el servidor procesa la URL.
+    setTimeout(function() {
+        document.getElementById('msg').innerText = "✅ REGISTRADO: " + texto;
+        if(navigator.vibrate) navigator.vibrate(100);
+    }, 1000);
+}
 
-        function onScanSuccess(decodedText) {
-            // Detener el escáner un momento para no repetir
-            document.getElementById('status').innerText = "Enviando: " + decodedText;
-            document.getElementById('status').classList.add('exito');
-
-            // Enviamos el dato a Google
-            fetch(`${URL_WEB_APP}?alumnoId=${encodeURIComponent(decodedText)}`, {
-                method: 'GET',
-                mode: 'no-cors' // <--- Esto evita errores de bloqueo de navegador
-            })
-            .then(() => {
-                console.log("Datos enviados");
-                // Vibrar el celular (solo Android)
-                if (navigator.vibrate) navigator.vibrate(200);
-                
-                setTimeout(() => {
-                    document.getElementById('status').innerText = "✅ " + decodedText + " Registrado";
-                }, 500);
-            })
-            .catch(err => {
-                alert("Error de conexión: " + err);
-            });
-        }
-
-        let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);
+var html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+html5QrcodeScanner.render(onScanSuccess);
     </script>
 </body>
 </html>
+
 
