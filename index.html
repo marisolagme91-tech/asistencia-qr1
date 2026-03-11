@@ -1,33 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escáner Pro</title>
+    <title>Escáner de Asistencia</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f4f7f6; }
-        #reader { width: 100%; max-width: 400px; margin: auto; border: 5px solid #fff; border-radius: 20px; }
-        #status { margin-top: 20px; font-weight: bold; color: #2c3e50; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #f0f2f5; margin: 0; padding: 20px; }
+        #reader { width: 100%; max-width: 400px; margin: 20px auto; border-radius: 15px; overflow: hidden; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #status { padding: 15px; margin: 20px; border-radius: 10px; background: white; font-weight: bold; }
+        .exito { background: #d4edda !important; color: #155724; border: 1px solid #c3e6cb; }
     </style>
 </head>
 <body>
-    <h2>📸 Pase de Lista QR</h2>
+    <h2>🚀 Escáner de Asistencia</h2>
     <div id="reader"></div>
-    <div id="status">Esperando escaneo...</div>
+    <div id="status">Esperando código QR...</div>
 
     <script>
-        const URL_WEB_APP = "PEGA_AQUI_TU_URL_DEL_PASO_1"; // <--- CAMBIA ESTO
+        // CAMBIA ESTO: Pega aquí tu URL de Google que probaste manualmente
+        const URL_WEB_APP =¨https://marisolagme91-tech.github.io/asistencia-qr1/¨
+
 
         function onScanSuccess(decodedText) {
+            // Detener el escáner un momento para no repetir
             document.getElementById('status').innerText = "Enviando: " + decodedText;
-            
-            fetch(`${URL_WEB_APP}?alumnoId=${decodedText}`)
-                .then(() => {
+            document.getElementById('status').classList.add('exito');
+
+            // Enviamos el dato a Google
+            fetch(`${URL_WEB_APP}?alumnoId=${encodeURIComponent(decodedText)}`, {
+                method: 'GET',
+                mode: 'no-cors' // <--- Esto evita errores de bloqueo de navegador
+            })
+            .then(() => {
+                console.log("Datos enviados");
+                // Vibrar el celular (solo Android)
+                if (navigator.vibrate) navigator.vibrate(200);
+                
+                setTimeout(() => {
                     document.getElementById('status').innerText = "✅ " + decodedText + " Registrado";
-                    navigator.vibrate(200); // Vibra al tener éxito
-                })
-                .catch(err => alert("Error al conectar: " + err));
+                }, 500);
+            })
+            .catch(err => {
+                alert("Error de conexión: " + err);
+            });
         }
 
         let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
